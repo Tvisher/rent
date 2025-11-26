@@ -2,7 +2,7 @@ import axios from "axios";
 
 export function getTilesData(params) {
     return axios.get("https://sutochno.ru/api/json/search/searchObjectsByTiles", {
-        params,
+        params
     })
         .then(response => {
             console.log("Успех:", response.data);
@@ -13,3 +13,10 @@ export function getTilesData(params) {
             throw error;
         });
 }
+
+
+
+export function getMapData(params) {
+    return axios.post("/ajax/sutdata.php", params)
+}
+
