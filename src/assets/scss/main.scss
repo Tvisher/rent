@@ -10,3 +10,17 @@
     width: 66% !important;
     height: 100% !important;
 }
+
+.sidebar-zone {
+    display: flex;
+    max-width: 670px;
+    width: 100%;
+}
+
+
+.cards-list {
+    width: 320px;
+    flex-shrink: 0;
+    overflow: auto;
+    margin-left: auto;
+}

@@ -1,5 +1,7 @@
 <script setup>
-import MapComponent from './components/MapComponent.vue';
+import MapComponent from '@/components/MapComponent.vue';
+import FiltersGroup from '@/components/FiltersGroup.vue';
+import Cards from '@/components/Cards.vue';
 const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
 if (isDark) {
@@ -11,6 +13,10 @@ if (isDark) {
 
 <template>
   <div class="search-app">
+    <div class="sidebar-zone">
+      <FiltersGroup />
+      <Cards />
+    </div>
     <MapComponent />
   </div>
 </template>

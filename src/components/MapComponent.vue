@@ -19,7 +19,7 @@ const mapDefaultSettings = ref({
   theme: getSystemTheme(),
   location: {
     center: [37.617644, 55.755819],
-    zoom: 12,
+    zoom: 13,
   },
 });
 
@@ -60,6 +60,7 @@ const handleMapStop = (params) => {
 
   console.log("API params:", currentBounds.value);
   const tilesList = calculateVisibleTiles(currentMapZoom, currentBounds.value, true);
+  console.log(tilesList);
 
   tilesList.forEach(tile => {
     getTilesData(
