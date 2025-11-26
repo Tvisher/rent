@@ -10,8 +10,6 @@ import {
 
 import { getTilesData } from '@/services/api.js';
 
-
-
 import { calculateVisibleTiles } from '@/composables/useTileCalculator.js'; // Путь к вашему файлу
 
 const mapInstance = shallowRef(null);
@@ -31,8 +29,6 @@ function getSystemTheme() {
     ? 'dark'
     : 'light';
 }
-
-
 
 let timer = null;
 function debounce(fn, delay) {
