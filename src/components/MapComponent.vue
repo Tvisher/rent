@@ -97,7 +97,6 @@ watch(() => props.items, (newVal, oldVal) => {
         }
       })
     }, (10 * ind))
-
   })
 });
 

@@ -44,6 +44,21 @@ const mokData = {
 
 const getDataDromNewPosition = (data) => {
   console.log('getDataDromNewPosition', data);
+  const bounds = data.location.bounds;
+  const dataForAjax = {
+    'ne_lat': bounds[1][1],
+    'ne_lng': bounds[1][0],
+    'sw_lat': bounds[0][1],
+    'sw_lng': bounds[0][0],
+    'date_begin': '22-12-2025',
+    'date_end': '22-01-2026',
+    'offset': 50
+  }
+  getMapData(dataForAjax).then(res => {
+    console.log("Данные от /ajax/sutdata.php:", res.data);
+    items.value = [...Object.values(res.data.objects)];
+    totalCount.value = res.data.totalCount;
+  });
 }
 
 
