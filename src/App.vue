@@ -12,9 +12,14 @@ const tilesObjects = ref([]);
 const count = 50;
 const offset = ref(0);
 
+// const bounds = [
+//   [39.50408911718748, 43.276302584557925], // SW
+//   [39.99847388281246, 44.06874178223176]   // NE
+// ];
+
 const bounds = [
-  [39.50408911718748, 43.276302584557925], // SW
-  [39.99847388281246, 44.06874178223176]   // NE
+  [39.50408911718748, 44.06874178223176], // SW
+  [39.99847388281246, 43.276302584557925]   // NE
 ];
 
 const mapSettings = {
@@ -26,10 +31,10 @@ const mapSettings = {
 }
 
 const mokData = {
-  'sw_lng': 39.50408911718748,
-  'sw_lat': 43.276302584557925,
-  'ne_lng': 39.99847388281246,
   'ne_lat': 44.06874178223176,
+  'ne_lng': 39.99847388281246,
+  'sw_lat': 43.276302584557925,
+  'sw_lng': 39.50408911718748,
   'date_begin': '22-12-2025',
   'date_end': '22-01-2026',
   "count": count,
@@ -41,11 +46,13 @@ const getDataDromNewPosition = ({ params }) => {
   console.log('onUpdate данные:', params);
   // offset.value = offset.value + count;
   const { bounds, zoom } = params.location;
+  console.log(bounds);
+
   const dataForAjax = {
-    'sw_lat': bounds[1][1],
-    'sw_lng': bounds[1][0],
     'ne_lat': bounds[0][1],
-    'ne_lng': bounds[0][0],
+    'ne_lng': bounds[1][0],
+    'sw_lat': bounds[1][1],
+    'sw_lng': bounds[0][0],
     'date_begin': '22-12-2025',
     'date_end': '22-01-2026',
     "count": count,

@@ -22,6 +22,7 @@ const markersWithPrice = ref([]);
 const mapDefaultSettings = ref(props.settings);
 
 
+
 let timer = null;
 function debounce(fn, delay) {
   return (...args) => {
@@ -34,6 +35,7 @@ const handleMapStop = (params) => {
   const mapdata = {
     params
   }
+
   emit('updatePosition', mapdata);
 };
 
@@ -80,12 +82,14 @@ watch(() => props.items, (newItems) => {
       onUpdate: onUpdateHandler,
     }" />
 
-    <yandex-map-marker v-for="(marker, index) in markersWithPrice" :key="marker.data.id"
-      :settings="{ coordinates: marker.coordinates }">
+    <yandex-map-marker v-for="(marker, index) in markersWithPrice" :key="marker.data.id" :settings="{
+      coordinates: marker.coordinates,
+      hideOutsideViewport: true
+    }">
       <div class="marker">
         <span class="marker-price">
-          <!-- {{ marker.data.price.toLocaleString('ru-RU') }} &#8381; -->
-          {{ index }}
+          {{ marker.data.price.toLocaleString('ru-RU') }} &#8381;
+          <!-- {{ index }} -->
         </span>
       </div>
     </yandex-map-marker>
