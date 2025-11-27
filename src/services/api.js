@@ -10,3 +10,6 @@ export function getMapData(params) {
     return axios.post("/ajax/sutdata.php", params)
 }
 
+
+
+

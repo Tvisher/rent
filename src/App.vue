@@ -3,14 +3,14 @@ import { onMounted, ref } from 'vue';
 import MapComponent from '@/components/MapComponent.vue';
 import FiltersGroup from '@/components/FiltersGroup.vue';
 import Cards from '@/components/Cards.vue';
-
 import { getMapData, getTilesData } from '@/services/api.js';
 import { calculateVisibleTiles } from '@/composables/useTileCalculator.js';
 
 const items = ref([]);
 const totalCount = ref(0);
-const tilesObjects = ref([])
-
+const tilesObjects = ref([]);
+const count = 50;
+const offset = ref(0);
 
 const bounds = [
   [39.50408911718748, 43.276302584557925], // SW
@@ -26,27 +26,31 @@ const mapSettings = {
 }
 
 const mokData = {
-  'ne_lat': 44.06874178223176,
-  'ne_lng': 39.99847388281246,
-  'sw_lat': 43.276302584557925,
   'sw_lng': 39.50408911718748,
+  'sw_lat': 43.276302584557925,
+  'ne_lng': 39.99847388281246,
+  'ne_lat': 44.06874178223176,
   'date_begin': '22-12-2025',
   'date_end': '22-01-2026',
-  'offset': 50
+  "count": count,
+  'offset': 0,
+  "zoom": 13,
 }
 
 const getDataDromNewPosition = ({ params }) => {
-  console.log('getDataDromNewPosition', params);
-  const bounds = params.location.bounds;
-
+  console.log('onUpdate данные:', params);
+  // offset.value = offset.value + count;
+  const { bounds, zoom } = params.location;
   const dataForAjax = {
-    'ne_lat': bounds[1][1],
-    'ne_lng': bounds[1][0],
-    'sw_lat': bounds[0][1],
-    'sw_lng': bounds[0][0],
+    'sw_lat': bounds[1][1],
+    'sw_lng': bounds[1][0],
+    'ne_lat': bounds[0][1],
+    'ne_lng': bounds[0][0],
     'date_begin': '22-12-2025',
     'date_end': '22-01-2026',
-    'offset': 50
+    "count": count,
+    'offset': 0,
+    "zoom": 13,
   }
 
   getMapData(dataForAjax).then(res => {
@@ -55,7 +59,7 @@ const getDataDromNewPosition = ({ params }) => {
     totalCount.value = res.data.totalCount;
   });
 
-  createTilesList(params)
+  // createTilesList(params)
 }
 
 function createTilesList(params) {
@@ -77,9 +81,6 @@ function createTilesList(params) {
   };
 
   const tilesList = calculateVisibleTiles(currentMapZoom, currentBounds, true);
-
-  console.log('tilesObjects.value', tilesObjects.value);
-
 
   const processedSet = new Set(
     tilesObjects.value.map(t => `${t.x}_${t.y}_${Math.floor(t.z)}`)

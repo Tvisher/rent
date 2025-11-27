@@ -11,8 +11,6 @@ import {
 } from 'vue-yandex-maps';
 
 
-// import { calculateVisibleTiles } from '@/composables/useTileCalculator.js';
-
 const props = defineProps({
   items: Array,
   settings: Object
@@ -20,7 +18,6 @@ const props = defineProps({
 
 
 const mapInstance = shallowRef(null);
-// const currentBounds = ref(null);
 const markersWithPrice = ref([]);
 const mapDefaultSettings = ref(props.settings);
 
@@ -34,8 +31,6 @@ function debounce(fn, delay) {
 }
 
 const handleMapStop = (params) => {
-
-
   const mapdata = {
     params
   }
@@ -49,24 +44,34 @@ const onUpdateHandler = (params) => {
   debouncedStop(params);
 };
 
+watch(() => props.items, (newItems) => {
+  const existingIds = new Set(markersWithPrice.value.map(m => m.data.id));
 
-watch(() => props.items, (newVal, oldVal) => {
-  newVal.forEach((el, ind) => {
-    setTimeout(() => {
-      markersWithPrice.value.push({
-        coordinates: [el.lng, el.lat],
-        data: {
-          id: el.id,
-          price: el.price
-        }
-      })
-    }, (10 * ind))
-  })
+  const newMarkers = newItems
+    .filter(item => !existingIds.has(item.id)) // только новые id
+    .map(item => ({
+      coordinates: [item.lng, item.lat],
+      data: {
+        id: item.id,
+        price: item.price
+      }
+    }));
+
+  // Если нечего добавлять — выходим без обновления реактивности
+  if (newMarkers.length === 0) return;
+
+  // Обновляем массив реактивно
+  markersWithPrice.value = [
+    ...markersWithPrice.value,
+    ...newMarkers
+  ];
 });
+
 
 </script>
 
 <template>
+  {{ markersWithPrice.length }}
   <yandex-map class="map-instance" v-model="mapInstance" :settings="mapDefaultSettings">
     <yandex-map-default-scheme-layer />
     <yandex-map-default-features-layer />
@@ -75,17 +80,15 @@ watch(() => props.items, (newVal, oldVal) => {
       onUpdate: onUpdateHandler,
     }" />
 
-    <yandex-map-marker v-for="(marker, index) in markersWithPrice" :key="index" :settings="marker">
+    <yandex-map-marker v-for="(marker, index) in markersWithPrice" :key="marker.data.id"
+      :settings="{ coordinates: marker.coordinates }">
       <div class="marker">
         <span class="marker-price">
-          {{ marker.data.price.toLocaleString('ru-RU') }} &#8381;
+          <!-- {{ marker.data.price.toLocaleString('ru-RU') }} &#8381; -->
+          {{ index }}
         </span>
       </div>
     </yandex-map-marker>
-
-    <!-- <yandex-map-marker v-for="(marker, index) in markers" :key="index" :settings="marker">
-      <div class="marker _yellow" />
-    </yandex-map-marker> -->
 
   </yandex-map>
 </template>
