@@ -4,19 +4,12 @@ import MapComponent from '@/components/MapComponent.vue';
 import FiltersGroup from '@/components/FiltersGroup.vue';
 import Cards from '@/components/Cards.vue';
 
-import { getMapData } from '@/services/api.js';
+import { getMapData, getTilesData } from '@/services/api.js';
+import { calculateVisibleTiles } from '@/composables/useTileCalculator.js';
 
 const items = ref([]);
 const totalCount = ref(0);
-
-
-function getSystemTheme() {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light';
-}
-
-console.log(getSystemTheme());
+const tilesObjects = ref([])
 
 
 const bounds = [
@@ -24,8 +17,8 @@ const bounds = [
   [39.99847388281246, 44.06874178223176]   // NE
 ];
 
-const settings = {
-  // theme: getSystemTheme(),
+const mapSettings = {
+  // theme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
   location: {
     bounds,
     zoom: 13,
@@ -42,9 +35,10 @@ const mokData = {
   'offset': 50
 }
 
-const getDataDromNewPosition = (data) => {
-  console.log('getDataDromNewPosition', data);
-  const bounds = data.location.bounds;
+const getDataDromNewPosition = ({ params }) => {
+  console.log('getDataDromNewPosition', params);
+  const bounds = params.location.bounds;
+
   const dataForAjax = {
     'ne_lat': bounds[1][1],
     'ne_lng': bounds[1][0],
@@ -54,10 +48,60 @@ const getDataDromNewPosition = (data) => {
     'date_end': '22-01-2026',
     'offset': 50
   }
+
   getMapData(dataForAjax).then(res => {
     console.log("Данные от /ajax/sutdata.php:", res.data);
     items.value = [...Object.values(res.data.objects)];
     totalCount.value = res.data.totalCount;
+  });
+
+  createTilesList(params)
+}
+
+function createTilesList(params) {
+  const bounds = params.location.bounds;
+  const currentMapZoom = params.location.zoom;
+  if (!bounds) return;
+
+  // Извлекаем все 4 значения, учитывая, что в парах (Lon, Lat)
+  const lonA = bounds[0][0];
+  const latA = bounds[0][1];
+  const lonB = bounds[1][0];
+  const latB = bounds[1][1];
+
+  const currentBounds = {
+    lat_min: Math.min(latA, latB), // Юг
+    lon_min: Math.min(lonA, lonB), // Запад
+    lat_max: Math.max(latA, latB), // Север
+    lon_max: Math.max(lonA, lonB), // Восток
+  };
+
+  const tilesList = calculateVisibleTiles(currentMapZoom, currentBounds, true);
+
+  console.log('tilesObjects.value', tilesObjects.value);
+
+
+  const processedSet = new Set(
+    tilesObjects.value.map(t => `${t.x}_${t.y}_${Math.floor(t.z)}`)
+  );
+
+  tilesList.forEach(tile => {
+    const key = `${tile.x}_${tile.y}_${Math.floor(tile.z)}`;
+
+    if (processedSet.has(key)) return;
+    tilesObjects.value.push(tile);
+
+    getTilesData({
+      date_begin: "08-12-2025",
+      date_end: "15-12-2025",
+      count: 10,
+      x: tile.x,
+      y: tile.y,
+      zoom: Math.floor(tile.z)
+    }).then(res => {
+      console.log("getTilesData res:", res);
+    });
+
   });
 }
 
@@ -79,7 +123,7 @@ onMounted(() => {
       <FiltersGroup />
       <Cards />
     </div>
-    <MapComponent :items="items" :settings="settings" @updatePosition="getDataDromNewPosition" />
+    <MapComponent :items="items" :settings="mapSettings" @updatePosition="getDataDromNewPosition" />
   </div>
 </template>
 

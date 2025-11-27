@@ -11,8 +11,7 @@ import {
 } from 'vue-yandex-maps';
 
 
-import { getTilesData } from '@/services/api.js';
-import { calculateVisibleTiles } from '@/composables/useTileCalculator.js';
+// import { calculateVisibleTiles } from '@/composables/useTileCalculator.js';
 
 const props = defineProps({
   items: Array,
@@ -21,7 +20,7 @@ const props = defineProps({
 
 
 const mapInstance = shallowRef(null);
-const currentBounds = ref(null);
+// const currentBounds = ref(null);
 const markersWithPrice = ref([]);
 const mapDefaultSettings = ref(props.settings);
 
@@ -36,46 +35,11 @@ function debounce(fn, delay) {
 
 const handleMapStop = (params) => {
 
-  const visibleBounds = params.location.bounds;
-  const currentMapZoom = params.location.zoom;
-  if (!visibleBounds) return;
 
-
-  // Извлекаем все 4 значения, учитывая, что в парах (Lon, Lat)
-  const lonA = visibleBounds[0][0];
-  const latA = visibleBounds[0][1];
-  const lonB = visibleBounds[1][0];
-  const latB = visibleBounds[1][1];
-
-  currentBounds.value = {
-    lat_min: Math.min(latA, latB), // Юг
-    lon_min: Math.min(lonA, lonB), // Запад
-    lat_max: Math.max(latA, latB), // Север
-    lon_max: Math.max(lonA, lonB), // Восток
-  };
-
-  console.log("API params:", currentBounds.value);
-  const tilesList = calculateVisibleTiles(currentMapZoom, currentBounds.value, true);
-  console.log(tilesList);
-  emit('updatePosition', params);
-
-  // tilesList.forEach(tile => {
-  //   getTilesData(
-  //     {
-  //       max_guests: 2,
-  //       occupied: "2025-12-11;2025-12-24",
-  //       format: "json",
-  //       token: "Hy6U3z61fflbgT2yJ/VdlQ2719",
-  //       count: 10,
-  //       x: tile.x,
-  //       y: tile.y,
-  //       zoom: Math.floor(tile.z)
-
-  //     }).then(data => {
-  //       console.log("Данные:", data);
-  //     });
-  // })
-
+  const mapdata = {
+    params
+  }
+  emit('updatePosition', mapdata);
 };
 
 const debouncedStop = debounce(handleMapStop, 300);
