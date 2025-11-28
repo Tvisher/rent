@@ -27,7 +27,18 @@ function getTileCoords(lat, lon, Z) {
 
 
 export function calculateVisibleTiles(Z, bounds, returnFullList) {
-    const { lat_min, lon_min, lat_max, lon_max } = bounds;
+    const lonA = bounds[0][0];
+    const latA = bounds[0][1];
+    const lonB = bounds[1][0];
+    const latB = bounds[1][1];
+
+    const currentBounds = {
+        lat_min: Math.min(latA, latB),
+        lon_min: Math.min(lonA, lonB),
+        lat_max: Math.max(latA, latB),
+        lon_max: Math.max(lonA, lonB),
+    };
+    const { lat_min, lon_min, lat_max, lon_max } = currentBounds;
 
     if (!lat_min || Z === undefined || Z === null) {
         return returnFullList ? [] : { X_min: 0, X_max: -1, Y_min: 0, Y_max: -1, Z: Z };

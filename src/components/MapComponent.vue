@@ -13,12 +13,14 @@ import {
 
 const props = defineProps({
   items: Array,
+  tilesMarkers: Array,
   settings: Object
 })
 
 
 const mapInstance = shallowRef(null);
 const markersWithPrice = ref([]);
+const lightMarkers = ref([]);
 const mapDefaultSettings = ref(props.settings);
 
 
@@ -39,7 +41,7 @@ const handleMapStop = (params) => {
   emit('updatePosition', mapdata);
 };
 
-const debouncedStop = debounce(handleMapStop, 300);
+const debouncedStop = debounce(handleMapStop, 600);
 const onUpdateHandler = (params) => {
   const { mapInAction } = params;
   if (mapInAction) return;
@@ -59,10 +61,7 @@ watch(() => props.items, (newItems) => {
       }
     }));
 
-  // Если нечего добавлять — выходим без обновления реактивности
   if (newMarkers.length === 0) return;
-
-  // Обновляем массив реактивно
   markersWithPrice.value = [
     ...markersWithPrice.value,
     ...newMarkers
@@ -73,32 +72,63 @@ watch(() => props.items, (newItems) => {
 </script>
 
 <template>
-  {{ markersWithPrice.length }}
-  <yandex-map class="map-instance" v-model="mapInstance" :settings="mapDefaultSettings">
-    <yandex-map-default-scheme-layer />
-    <yandex-map-default-features-layer />
+  <div class="map-instance">
+    <div class="markers-count">
+      {{ markersWithPrice.length }}
+    </div>
+    <yandex-map width="100%" height="100%" v-model="mapInstance" :settings="mapDefaultSettings">
+      <yandex-map-default-scheme-layer />
+      <yandex-map-default-features-layer />
 
-    <yandex-map-listener :settings="{
-      onUpdate: onUpdateHandler,
-    }" />
+      <yandex-map-listener :settings="{
+        onUpdate: onUpdateHandler,
+      }" />
 
-    <yandex-map-marker v-for="(marker, index) in markersWithPrice" :key="marker.data.id" :settings="{
-      coordinates: marker.coordinates,
-      hideOutsideViewport: true
-    }">
-      <div class="marker">
-        <span class="marker-price">
-          {{ marker.data.price.toLocaleString('ru-RU') }} &#8381;
-          <!-- {{ index }} -->
-        </span>
-      </div>
-    </yandex-map-marker>
+      <yandex-map-marker v-for="(marker, index) in markersWithPrice" :key="marker.data.id" :settings="{
+        coordinates: marker.coordinates,
+        hideOutsideViewport: true
+      }">
+        <div class="marker">
+          <span class="marker-price">
+            {{ marker.data.price.toLocaleString('ru-RU') }} &#8381;
+          </span>
+        </div>
+      </yandex-map-marker>
 
-  </yandex-map>
+
+      <!-- <yandex-map-marker v-for="(marker, index) in lightMarkers" :key="marker.data.id" :settings="{
+        coordinates: marker.coordinates,
+        hideOutsideViewport: true
+      }">
+        <div class="marker">
+          <span class="marker-price">
+            {{ marker.data.price.toLocaleString('ru-RU') }} &#8381;
+  
+          </span>
+        </div>
+      </yandex-map-marker> -->
+
+    </yandex-map>
+  </div>
 </template>
 
 
 <style lang="scss">
+.markers-count {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  background-color: #000;
+  padding: 10px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 100%;
+  border-radius: 5px;
+  z-index: 999;
+  pointer-events: none;
+}
+
 .marker {
   cursor: pointer;
   position: relative;

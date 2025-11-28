@@ -12,10 +12,6 @@ const tilesObjects = ref([]);
 const count = 50;
 const offset = ref(0);
 
-// const bounds = [
-//   [39.50408911718748, 43.276302584557925], // SW
-//   [39.99847388281246, 44.06874178223176]   // NE
-// ];
 
 const bounds = [
   [39.50408911718748, 44.06874178223176], // SW
@@ -42,11 +38,10 @@ const mokData = {
   "zoom": 13,
 }
 
-const getDataDromNewPosition = ({ params }) => {
-  console.log('onUpdate данные:', params);
+const getDataFromNewPosition = ({ params }) => {
   // offset.value = offset.value + count;
   const { bounds, zoom } = params.location;
-  console.log(bounds);
+
 
   const dataForAjax = {
     'ne_lat': bounds[0][1],
@@ -60,34 +55,21 @@ const getDataDromNewPosition = ({ params }) => {
     "zoom": 13,
   }
 
+  const start = Date.now();
   getMapData(dataForAjax).then(res => {
-    console.log("Данные от /ajax/sutdata.php:", res.data);
+    console.log("Время запроса к sutdata.php:", Date.now() - start, "ms");
+
     items.value = [...Object.values(res.data.objects)];
     totalCount.value = res.data.totalCount;
   });
 
-  // createTilesList(params)
+  createTilesList(bounds, Math.round(zoom))
 }
 
-function createTilesList(params) {
-  const bounds = params.location.bounds;
-  const currentMapZoom = params.location.zoom;
-  if (!bounds) return;
+function createTilesList(bounds, zoom) {
 
-  // Извлекаем все 4 значения, учитывая, что в парах (Lon, Lat)
-  const lonA = bounds[0][0];
-  const latA = bounds[0][1];
-  const lonB = bounds[1][0];
-  const latB = bounds[1][1];
-
-  const currentBounds = {
-    lat_min: Math.min(latA, latB), // Юг
-    lon_min: Math.min(lonA, lonB), // Запад
-    lat_max: Math.max(latA, latB), // Север
-    lon_max: Math.max(lonA, lonB), // Восток
-  };
-
-  const tilesList = calculateVisibleTiles(currentMapZoom, currentBounds, true);
+  const tilesList = calculateVisibleTiles(zoom, bounds, true);
+  console.log(tilesList);
 
   const processedSet = new Set(
     tilesObjects.value.map(t => `${t.x}_${t.y}_${Math.floor(t.z)}`)
@@ -95,30 +77,30 @@ function createTilesList(params) {
 
   tilesList.forEach(tile => {
     const key = `${tile.x}_${tile.y}_${Math.floor(tile.z)}`;
-
     if (processedSet.has(key)) return;
     tilesObjects.value.push(tile);
-
-    getTilesData({
-      date_begin: "08-12-2025",
-      date_end: "15-12-2025",
-      count: 10,
-      x: tile.x,
-      y: tile.y,
-      zoom: Math.floor(tile.z)
-    }).then(res => {
-      console.log("getTilesData res:", res);
-    });
+    // getTilesData({
+    //   date_begin: "08-12-2025",
+    //   date_end: "15-12-2025",
+    //   count: 10,
+    //   x: tile.x,
+    //   y: tile.y,
+    //   zoom: tile.z
+    // }).then(res => {
+    //   console.log("getTilesData res:", res);
+    // });
 
   });
 }
 
 
 onMounted(() => {
+  const start = Date.now();
   getMapData(mokData).then(res => {
-    console.log("Данные от /ajax/sutdata.php:", res.data);
+    console.log("Время базового запроса к sutdata.php:", Date.now() - start, "ms");
     items.value = [...Object.values(res.data.objects)];
     totalCount.value = res.data.totalCount;
+
   })
 
 })
@@ -131,7 +113,7 @@ onMounted(() => {
       <FiltersGroup />
       <Cards />
     </div>
-    <MapComponent :items="items" :settings="mapSettings" @updatePosition="getDataDromNewPosition" />
+    <MapComponent :items="items" :settings="mapSettings" @updatePosition="getDataFromNewPosition" />
   </div>
 </template>
 
